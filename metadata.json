@@ -1,0 +1,6 @@
+{
+  "name": "Pratyush Grocery Store",
+  "description": "Pratyush Grocery Store - Premium farm-fresh groceries, organic produce, daily essentials & fast home delivery in Nepal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
