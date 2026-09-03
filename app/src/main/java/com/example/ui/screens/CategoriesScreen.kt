@@ -296,10 +296,10 @@ fun CategoriesScreen(
                                 .testTag("sort_button")
                                 .clickable {
                                     val nextSort = when (filterState.sortOption) {
-                                        SortOption.POPULAR -> SortOption.PRICE_LOW_TO_HIGH
-                                        SortOption.PRICE_LOW_TO_HIGH -> SortOption.PRICE_HIGH_TO_LOW
-                                        SortOption.PRICE_HIGH_TO_LOW -> SortOption.RATING
-                                        SortOption.RATING -> SortOption.POPULAR
+                                        SortOption.POPULAR, SortOption.POPULARITY -> SortOption.PRICE_LOW_TO_HIGH
+                                        SortOption.PRICE_LOW_TO_HIGH, SortOption.PRICE_LOW_HIGH -> SortOption.PRICE_HIGH_TO_LOW
+                                        SortOption.PRICE_HIGH_TO_LOW, SortOption.PRICE_HIGH_LOW -> SortOption.RATING
+                                        else -> SortOption.POPULAR
                                     }
                                     onUpdateSortOption(nextSort)
                                 }
@@ -317,9 +317,9 @@ fun CategoriesScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = when (filterState.sortOption) {
-                                        SortOption.POPULAR -> "Sort: Popular"
-                                        SortOption.PRICE_LOW_TO_HIGH -> "Price: Low-High"
-                                        SortOption.PRICE_HIGH_TO_LOW -> "Price: High-Low"
+                                        SortOption.POPULAR, SortOption.POPULARITY -> "Sort: Popular"
+                                        SortOption.PRICE_LOW_TO_HIGH, SortOption.PRICE_LOW_HIGH -> "Price: Low-High"
+                                        SortOption.PRICE_HIGH_TO_LOW, SortOption.PRICE_HIGH_LOW -> "Price: High-Low"
                                         SortOption.RATING -> "Top Rated"
                                     },
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
