@@ -51,3 +51,14 @@ val NepalBlue = Color(0xFF003893)
 val ESewaGreen = Color(0xFF60BB46)
 val KhaltiPurple = Color(0xFF5D2E8C)
 val FonepayRed = Color(0xFFD61F26)
+
+// Aliases and additional colors for legacy/compatibility support
+val PrimaryGreen = ForestGreenPrimary
+val OnPrimary = ForestGreenOnPrimary
+val PrimaryContainerGreen = ForestGreenContainer
+val SecondaryContainerOrange = HarvestOrangeContainer
+val TertiaryContainerBlue = LeafGreenContainer
+val ErrorContainerRed = Color(0xFFFFDAD6)
+val OnErrorContainerRed = Color(0xFF410002)
+val SurfaceContainerLow = Color(0xFFF5F5F0)
+val SurfaceContainerLowest = Color(0xFFFFFFFF)

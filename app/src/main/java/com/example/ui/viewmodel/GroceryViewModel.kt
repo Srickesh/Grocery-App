@@ -26,10 +26,21 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+data class FilterState(
+    val organicOnly: Boolean = false,
+    val localOnly: Boolean = false,
+    val expressOnly: Boolean = false,
+    val inStockOnly: Boolean = false,
+    val sortOption: SortOption = SortOption.POPULAR
+)
+
 enum class SortOption(val title: String) {
+    POPULAR("Featured / Popular"),
     POPULARITY("Featured / Popular"),
     PRICE_LOW_HIGH("Price: Low to High"),
+    PRICE_LOW_TO_HIGH("Price: Low to High"),
     PRICE_HIGH_LOW("Price: High to Low"),
+    PRICE_HIGH_TO_LOW("Price: High to Low"),
     RATING("Highest Rated")
 }
 
@@ -66,18 +77,6 @@ class GroceryViewModel(application: Application) : AndroidViewModel(application)
 
     private val _appliedCoupon = MutableStateFlow<String?>(null)
     val appliedCoupon: StateFlow<String?> = _appliedCoupon.asStateFlow()
-
-    val discountAmount: StateFlow<Double> = combine(_appliedCoupon, activeCoupons, cartSubtotal) { couponCode, coupons, subtotal ->
-        if (couponCode == null || subtotal == 0.0) 0.0
-        else {
-            val discountVal = coupons[couponCode] ?: 0.0
-            if (discountVal <= 1.0) {
-                subtotal * discountVal
-            } else {
-                discountVal.coerceAtMost(subtotal)
-            }
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
     private val _selectedProductForDetails = MutableStateFlow<Product?>(null)
     val selectedProductForDetails: StateFlow<Product?> = _selectedProductForDetails.asStateFlow()
@@ -124,10 +123,10 @@ class GroceryViewModel(application: Application) : AndroidViewModel(application)
         list
     }.combine(_sortOption) { list, sort ->
         when (sort) {
-            SortOption.PRICE_LOW_HIGH -> list.sortedBy { it.price }
-            SortOption.PRICE_HIGH_LOW -> list.sortedByDescending { it.price }
+            SortOption.PRICE_LOW_HIGH, SortOption.PRICE_LOW_TO_HIGH -> list.sortedBy { it.price }
+            SortOption.PRICE_HIGH_LOW, SortOption.PRICE_HIGH_TO_LOW -> list.sortedByDescending { it.price }
             SortOption.RATING -> list.sortedByDescending { it.rating }
-            SortOption.POPULARITY -> list
+            SortOption.POPULARITY, SortOption.POPULAR -> list
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), repository.allProducts)
 
@@ -143,7 +142,19 @@ class GroceryViewModel(application: Application) : AndroidViewModel(application)
         items.entries.sumOf { it.key.price * it.value }
     }
 
-    val cartVat: StateFlow<Double> = combine(cartSubtotal, _discountAmount) { subtotal, discount ->
+    val discountAmount: StateFlow<Double> = combine(_appliedCoupon, activeCoupons, cartSubtotal) { couponCode, coupons, subtotal ->
+        if (couponCode == null || subtotal == 0.0) 0.0
+        else {
+            val discountVal = coupons[couponCode] ?: 0.0
+            if (discountVal <= 1.0) {
+                subtotal * discountVal
+            } else {
+                discountVal.coerceAtMost(subtotal)
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    val cartVat: StateFlow<Double> = combine(cartSubtotal, discountAmount) { subtotal, discount ->
         (subtotal - discount).coerceAtLeast(0.0) * 0.13
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
@@ -151,7 +162,7 @@ class GroceryViewModel(application: Application) : AndroidViewModel(application)
         if (subtotal == 0.0 || subtotal >= 1000.0) 0.0 else 60.0
     }
 
-    val cartTotal: StateFlow<Double> = combine(cartSubtotal, _discountAmount, cartDeliveryFee, cartVat) { sub, disc, delivery, vat ->
+    val cartTotal: StateFlow<Double> = combine(cartSubtotal, discountAmount, cartDeliveryFee, cartVat) { sub, disc, delivery, vat ->
         if (sub == 0.0) 0.0 else (sub - disc).coerceAtLeast(0.0) + delivery + vat
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
